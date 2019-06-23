@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 
 import optparse
 import os
@@ -55,25 +55,25 @@ def extract(filename):
                         s = chunk_data[:tags.t.byteCount]
                     out.write(s)
                     remaining -= len(s)
-                print "wrote", full_path_name
+                print ("wrote", full_path_name)
             elif header.type == yaffs.SYMLINK:
                 os.symlink(header.alias, full_path_name)
-                print "symlink %s -> %s" % (header.alias, full_path_name)
+                print ("symlink %s -> %s" % (header.alias, full_path_name))
             elif header.type == yaffs.DIRECTORY:
                 try:
-                    os.mkdir(full_path_name, 0777)
-                    print "created directory %s" % full_path_name
-                except OSError, exc:
+                    os.mkdir(full_path_name, 0o777)
+                    print ("created directory %s" % full_path_name)
+                except OSError as exc:
                     if "exists" in str(exc):
                         pass
                     else:
-                        print str(exc)
+                        print (str(exc))
                         raise
             elif header.type == yaffs.HARDLINK:
                 os.link(yaffs_objects[header.equivalentObjectId], full_path_name)
-                print "hardlink %s -> %s" % (yaffs_objects[header.equivalentObjectId], full_path_name)
+                print ("hardlink %s -> %s" % (yaffs_objects[header.equivalentObjectId], full_path_name))
             else:
-                print "skipping unknown object"
+                print ("skipping unknown object")
                 
 
 def get_files(filename, filenames, callback=None):
@@ -124,16 +124,16 @@ def dotty(header):
 def get_save_filename(filename=""):
     while True:
         if filename == "":
-            new_filename = raw_input("Save as: ")
+            new_filename = input("Save as: ")
         else:
-            new_filename = raw_input("Save as (empty=%s): " % filename)
+            new_filename = input("Save as (empty=%s): " % filename)
         if new_filename == "" and filename == "":
             continue
         if new_filename != "":
             filename = new_filename
         try:
             os.stat(filename)
-            ans = raw_input("Warning: %s already exists, overwrite (y/n)? " % filename)
+            ans = input("Warning: %s already exists, overwrite (y/n)? " % filename)
 
             if ans.lower().startswith("y"):
                 break
@@ -151,21 +151,19 @@ def extract_sms(content):
         fd.write(content)
         fd.close()
         messages = read_messages(name)
-        print "Read %s messages" % str(messages.attrib["count"])
+        print ("Read %s messages" % str(messages.attrib["count"]))
         newest = datetime.datetime.fromtimestamp(int(messages.getchildren()[0].attrib["date"])/1000)
         output = newest.strftime("sms-%Y%m%d%H%M%S.xml")
-        etree.ElementTree(messages).write(get_save_filename(output),
-                                          encoding="utf-8",
-                                          xml_declaration=True)
+        etree.ElementTree(messages).write(get_save_filename(output), encoding="utf-8", xml_declaration=True)
         
-    except Exception, exc:
-        print "Failed to extract messages: %s" % exc
-        print repr(exc)
+    except Exception as exc:
+        print ("Failed to extract messages: %s" % exc)
+        print (repr(exc))
     finally:
         try:
             os.unlink(name)
         except:
-            print "Warning: failed to remove temporary file %s" % name
+            print ("Warning: failed to remove temporary file %s" % name)
 
 def extract_calls(content):
     fd, name = tempfile.mkstemp()
@@ -174,42 +172,42 @@ def extract_calls(content):
         fd.write(content)
         fd.close()
         calls = read_calls(name)
-        print "Read %s calls" % str(calls.attrib["count"])
+        print ("Read %s calls" % str(calls.attrib["count"]))
         newest = datetime.datetime.fromtimestamp(int(calls.getchildren()[0].attrib["date"])/1000)
         output = newest.strftime("calls-%Y%m%d%H%M%S.xml")
         etree.ElementTree(calls).write(get_save_filename(output),
                                        encoding="utf-8",
                                        xml_declaration=True)
 
-    except Exception, exc:
-        print "Failed to extract calls: %s" % exc
+    except Exception as exc:
+        print ("Failed to extract calls: %s" % exc)
     finally:
         try:
             os.unlink(name)
         except:
-            print "Warning: failed to remove temporary file %s" % name
+            print ("Warning: failed to remove temporary file %s" % name)
 
 def interactive(filename):
-    print "Scanning and reading image (this may take some time)"
+    print ("Scanning and reading image (this may take some time)")
     r = get_files(filename, ["mmssms.db", "contacts2.db"], dotty)
-    print ""
+    print ("")
     while True:
-        print
-        print "Found files:"
+        print ()
+        print ("Found files:")
         names = r.keys()
         for i, n in enumerate(names):
-            print "[%d] %s" % (i+1, n)
+            print ("[%d] %s" % (i+1, n))
 
         n = int(raw_input("Enter file number to extract (0 to quit): ")) - 1
         if n < 0 or n >= len(names):
             break
         name = names[n]
-        print "File %s selected." % name
-        print "Possible actions:"
-        print "[f] save file"
-        print "[s] extract SMS messages from file"
-        print "[c] extract Call logs from file"
-        t = raw_input("Please choose action: ")
+        print ("File %s selected." % name)
+        print ("Possible actions:")
+        print ("[f] save file")
+        print ("[s] extract SMS messages from file")
+        print ("[c] extract Call logs from file")
+        t = input("Please choose action: ")
         t = t.lower()
         
         if t.startswith("f"):
@@ -238,15 +236,15 @@ def main():
     if opts.sms:
         try:
             extract_sms(open(args[0], "rb").read())
-        except Exception, exc:
-            print "Failed to extract messages: %s" % exc
+        except Exception as exc:
+            print ("Failed to extract messages: %s" % exc)
         return
 
     if opts.calls:
         try:
             extract_calls(open(args[0], "rb").read())
-        except Exception, exc:
-            print "Failed to extract call logs: %s" % exc
+        except Exception as exc:
+            print ("Failed to extract call logs: %s" % exc)
         return
 
     if opts.extract:

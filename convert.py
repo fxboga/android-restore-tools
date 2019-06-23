@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+﻿# -*- encoding: utf-8 -*-
 
 import datetime
 import locale
@@ -13,13 +13,13 @@ else:
     datefmt = "%c"
 
 def v(x):
-    xs = unicode(x)
+    xs = x #unicode(x)
     if xs == "":
         return "null"
     elif x is None:
         return "null"
     else:
-        return xs
+        return str(xs)
     
 def read_calls(dbfile):
     locale.setlocale(locale.LC_ALL, "C")
@@ -63,7 +63,7 @@ def read_messages(dbfile):
         row = c.fetchone()
         if row is None: break
 
-        address, date, protocol, read, status, type, subject, body, service_center, locked = row
+        address, date, protocol, read, status, smstype, subject, body, service_center, locked = row
 
         if protocol is None:
             protocol = 0
@@ -72,7 +72,7 @@ def read_messages(dbfile):
             "protocol": v(protocol),
             "address": v(address),
             "date": v(date),
-            "type": v(type),
+            "type": v(smstype),
             "subject": v(subject),
             "body": v(body),
             # toa
